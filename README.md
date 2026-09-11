@@ -13,4 +13,4 @@ dotnet add package MetaRPC.Copier
 
 ## Quick Start
 
-See [Quick Start Documentation](https://github.com/MetaRPC/CSharpCopier/tree/main/docsAll_Guides/Your_First_Project/) for a 10-minute walkthrough.
+See [Quick Start Documentation](https://github.com/MetaRPC/CSharpCopier/blob/main/docs/All_Guides/Your_First_Project.md) for a 10-minute walkthrough.
