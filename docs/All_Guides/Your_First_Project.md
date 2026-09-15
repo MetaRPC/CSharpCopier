@@ -47,13 +47,12 @@ var slaveAcc = await demoClient.OpenDemoAccountAsync(new GuiDemoOpenAccountReque
 Console.WriteLine($"Slave Demo Account: {slaveAcc.Login}");
 
 // 2. Connect to Copier Service
-var copier = new CopierService("https://copy.mrpc.pro:443", userKey: "YOUR_USER_KEY", managerKey: "YOUR_MANAGER_KEY");
+var copier = new CopierService("https://copy.mrpc.pro:443", userKey: "YOUR_USER_KEY");
 
 // 3. Start Copier with Risk Multiplier
 var startReply = await copier.StartAsync(new StartRequest
 {
     UserKey = "YOUR_USER_KEY",
-    ManagerKey = "YOUR_MANAGER_KEY",
     Master = new Account { Type = "MT5", User = masterAcc.Login, Password = masterAcc.Password, Server = masterAcc.Server },
     Slave = new Account { Type = "MT5", User = slaveAcc.Login, Password = slaveAcc.Password, Server = slaveAcc.Server },
     RiskType = "LotMultiplier",

@@ -13,7 +13,7 @@ Console.WriteLine($"[1] Created Master Account: #{master.Login} on {master.Serve
 Console.WriteLine($"    Created Slave Account:  #{slave.Login} on {slave.Server}");
 
 // 2. Initialize Copier Service
-var copier = new CopierService("https://copy.mrpc.pro:443", "YOUR_USER_KEY", "YOUR_MANAGER_KEY");
+var copier = new CopierService("https://copy.mrpc.pro:443", "YOUR_USER_KEY");
 
 // 3. Start Copier
 var startRes = await copier.StartAsync(new StartRequest

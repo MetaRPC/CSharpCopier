@@ -16,4 +16,9 @@
     <PackageReference Include="Grpc.Net.Client" Version="2.66.0" />
     <PackageReference Include="Grpc.Tools" Version="2.66.0" PrivateAssets="All" />
   </ItemGroup>
+
+  <ItemGroup>
+    <Compile Remove="examples\**" />
+    <None Include="examples\**" />
+  </ItemGroup>
 </Project>
