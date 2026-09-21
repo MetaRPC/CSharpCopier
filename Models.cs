@@ -10,6 +10,7 @@ public class Account
     [JsonPropertyName("password")] public string Password { get; set; } = "";
     [JsonPropertyName("server")] public string Server { get; set; } = "";
     [JsonPropertyName("name")] public string Name { get; set; } = "";
+    [JsonPropertyName("id")] public string Id { get; set; } = "";
 }
 
 public class StartRequest

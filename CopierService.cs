@@ -39,7 +39,8 @@ public sealed class CopierService : IDisposable
                 User = request.Master.User,
                 Password = request.Master.Password,
                 Server = request.Master.Server,
-                Name = request.Master.Name
+                Name = request.Master.Name,
+                Id = request.Master.Id
             },
             Slave = new tradecopy.Grpc.Account
             {
@@ -47,7 +48,8 @@ public sealed class CopierService : IDisposable
                 User = request.Slave.User,
                 Password = request.Slave.Password,
                 Server = request.Slave.Server,
-                Name = request.Slave.Name
+                Name = request.Slave.Name,
+                Id = request.Slave.Id
             },
             RiskType = request.RiskType,
             RiskValue = request.RiskValue,

@@ -87,4 +87,58 @@ public sealed class DemoAccountClient
             FullLifeTimeSeconds = data.GetProperty("fullLifeTimeSeconds").GetInt32()
         };
     }
+
+    public async Task<JsonDocument> OrderSendAsync(string terminalId, string symbol, string operation, double volume, string apiKey = "TRIAL")
+    {
+        var url = $"{_endpoint}/OrderSend?id={terminalId}&symbol={symbol}&operation={operation}&volume={volume}";
+        using var req = new HttpRequestMessage(HttpMethod.Get, url);
+        req.Headers.Add("APIKey", apiKey);
+        req.Headers.Add("id", terminalId);
+        req.Headers.Add("User-Agent", "CSharpCopier/1.0.0");
+        using var resp = await _http.SendAsync(req);
+        resp.EnsureSuccessStatusCode();
+        var json = await resp.Content.ReadAsStringAsync();
+        return JsonDocument.Parse(json);
+    }
+
+    public async Task<JsonElement> OpenedOrdersAsync(string terminalId, string apiKey = "TRIAL")
+    {
+        var url = $"{_endpoint}/OpenedOrders?id={terminalId}";
+        using var req = new HttpRequestMessage(HttpMethod.Get, url);
+        req.Headers.Add("APIKey", apiKey);
+        req.Headers.Add("id", terminalId);
+        req.Headers.Add("User-Agent", "CSharpCopier/1.0.0");
+        using var resp = await _http.SendAsync(req);
+        resp.EnsureSuccessStatusCode();
+        var json = await resp.Content.ReadAsStringAsync();
+        var doc = JsonDocument.Parse(json);
+        if (doc.RootElement.TryGetProperty("data", out var data) && data.TryGetProperty("positionInfos", out var positions))
+        {
+            return positions.Clone();
+        }
+        return default;
+    }
+
+    public async Task<JsonDocument> OrderCloseAsync(string terminalId, ulong ticket, string apiKey = "TRIAL")
+    {
+        var url = $"{_endpoint}/OrderClose?id={terminalId}&ticket={ticket}&volume=0&slippage=20";
+        using var req = new HttpRequestMessage(HttpMethod.Get, url);
+        req.Headers.Add("APIKey", apiKey);
+        req.Headers.Add("id", terminalId);
+        req.Headers.Add("User-Agent", "CSharpCopier/1.0.0");
+        using var resp = await _http.SendAsync(req);
+        resp.EnsureSuccessStatusCode();
+        var json = await resp.Content.ReadAsStringAsync();
+        return JsonDocument.Parse(json);
+    }
+
+    public static string ToHyphenGuid(string hexGuid)
+    {
+        var clean = hexGuid.Replace("mt5_live_", "").Replace("-", "");
+        if (clean.Length == 32)
+        {
+            return $"{clean.Substring(0, 8)}-{clean.Substring(8, 4)}-{clean.Substring(12, 4)}-{clean.Substring(16, 4)}-{clean.Substring(20, 12)}";
+        }
+        return hexGuid;
+    }
 }
