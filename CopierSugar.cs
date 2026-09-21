@@ -15,7 +15,8 @@ public sealed class CopierSugar
     public static CopierSugar Create() => new();
 
     public CopierSugar WithEndpoint(string endpoint) { _endpoint = endpoint; return this; }
-    public CopierSugar WithCredentials(string userKey, string managerKey = "") { _req.UserKey = userKey; _req.ManagerKey = string.IsNullOrEmpty(managerKey) ? userKey : managerKey; return this; }
+    public CopierSugar WithCredentials(string userKey) { _req.UserKey = userKey; _req.ManagerKey = userKey; return this; }
+    public CopierSugar WithCredentials(string userKey, string managerKey) { _req.UserKey = userKey; _req.ManagerKey = string.IsNullOrEmpty(managerKey) ? userKey : managerKey; return this; }
 
     public CopierSugar FromMaster(Action<AccountBuilder> configure)
     {

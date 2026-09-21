@@ -19,7 +19,7 @@ public sealed class CopierService : IDisposable
     public CopierService(string endpoint, string userKey, string managerKey = "")
     {
         _endpoint = endpoint;
-        _account = new CopierAccount(endpoint, userKey, managerKey);
+        _account = new CopierAccount(endpoint, userKey, string.IsNullOrEmpty(managerKey) ? userKey : managerKey);
     }
 
     public async Task<StartReply> StartAsync(StartRequest request, CancellationToken ct = default)

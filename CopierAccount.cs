@@ -44,7 +44,6 @@ public sealed class CopierAccount : IDisposable
         var headers = new Metadata
         {
             { "authorization", $"Bearer {UserKey}" },
-            { "x-metarpc-manager", ManagerKey },
             { "x-metarpc-client-sdk", "CSharpCopier/1.0.0" }
         };
         return headers;

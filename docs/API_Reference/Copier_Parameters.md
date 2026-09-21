@@ -9,7 +9,6 @@ Exhaustive documentation for every parameter accepted by `CopierService.Start` a
 | Field Name | Protobuf Field | Data Type | Required | Default | Description |
 |:---|:---|:---|:---|:---|:---|
 | `user_key` | `string` (1) | String | **Yes** | — | MetaRPC customer identifier key. Used for billing, rate limiting, and permission scoping. |
-| `manager_key` | `string` (2) | String | No | `user_key` | Optional manager key with administrative rights. If omitted or empty, defaults to `user_key`. |
 | `master.type` | `string` (1) | String | **Yes** | — | Protocol version for the master terminal: `"MT4"` or `"MT5"`. |
 | `master.user` | `uint64` (2) | UInt64 | **Yes** | — | Master trading account login ID / account number. |
 | `master.password` | `string` (3) | String | **Yes** | — | Master account trading password (investor or master password). |
