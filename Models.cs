@@ -95,3 +95,15 @@ public class GuiDemoOpenAccountReply
     public string Server { get; set; } = "";
     public string DebugLog { get; set; } = "";
 }
+
+public class ConnectExReply
+{
+    public string TerminalInstanceGuid { get; set; } = "";
+    public string TerminalType { get; set; } = "MT5";
+}
+
+public class DisconnectReply
+{
+    public string UniqueIdentifier { get; set; } = "";
+    public int FullLifeTimeSeconds { get; set; }
+}

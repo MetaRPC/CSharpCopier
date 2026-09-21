@@ -4,34 +4,28 @@ using MetaRPC.Copier;
 using MetaRPC.Copier.Models;
 
 Console.WriteLine("=== MetaRPC CSharpCopier Quick Start Demo ===");
+const string apiKey = "TRIAL";
 
-// 1. Provision Demo Accounts
-var demoClient = new DemoAccountClient("https://mt5.mrpc.pro:443");
-var master = await demoClient.OpenDemoAccountAsync(new GuiDemoOpenAccountRequest { Server = "MetaQuotes-Demo" });
-var slave = await demoClient.OpenDemoAccountAsync(new GuiDemoOpenAccountRequest { Server = "MetaQuotes-Demo" });
-Console.WriteLine($"[1] Created Master Account: #{master.Login} on {master.Server}");
-Console.WriteLine($"    Created Slave Account:  #{slave.Login} on {slave.Server}");
+// 1. Provision Live Demo Account
+Console.WriteLine("\n[1] Provisioning live demo account on MetaQuotes-Demo...");
+var demoClient = new DemoAccountClient("https://mt5.mrpc.pro");
+var master = await demoClient.OpenDemoAccountAsync(new GuiDemoOpenAccountRequest { Server = "MetaQuotes-Demo" }, apiKey);
+Console.WriteLine($"    Master Account Provisioned: #{master.Login} on {master.Server}");
 
-// 2. Initialize Copier Service
-var copier = new CopierService("https://copy.mrpc.pro:443", "YOUR_USER_KEY");
+// 2. Connect Terminal via ConnectEx with APIKey: TRIAL
+Console.WriteLine($"\n[2] Connecting terminal via ConnectEx (APIKey: {apiKey})...");
+var conn = await demoClient.ConnectExAsync(master.Login, master.Password, master.Server, apiKey);
+Console.WriteLine($"    Terminal Connected! Instance GUID: {conn.TerminalInstanceGuid}");
 
-// 3. Start Copier
-var startRes = await copier.StartAsync(new StartRequest
-{
-    Master = new Account { Type = "MT5", User = master.Login, Password = master.Password, Server = master.Server },
-    Slave = new Account { Type = "MT5", User = slave.Login, Password = slave.Password, Server = slave.Server },
-    RiskType = "LotMultiplier",
-    RiskValue = "1.5",
-    CopySl = true,
-    CopyTp = true
-});
-Console.WriteLine($"[2] Started Copier! ID: {startRes.CopierId}");
-
-// 4. List Active Copiers
+// 3. Check Trade Copier Service
+Console.WriteLine($"\n[3] Interacting with Copier Service (userKey: {apiKey})...");
+var copier = new CopierService("https://copy.mrpc.pro:443", apiKey);
 var list = await copier.ListAsync();
-Console.WriteLine($"[3] Active Copiers count: {list.Copiers.Count}");
+Console.WriteLine($"    Active Copiers for {apiKey}: {list.Copiers.Count}");
 
-// 5. Pause and Cleanup
-await copier.PauseAsync(startRes.CopierId, true);
-await copier.RemoveAsync(startRes.CopierId);
-Console.WriteLine("[4] Copier cleanly paused and removed.");
+// 4. Cleanly Disconnect Terminal Session
+Console.WriteLine($"\n[4] Disconnecting terminal session {conn.TerminalInstanceGuid}...");
+var disc = await demoClient.DisconnectAsync(conn.TerminalInstanceGuid, apiKey);
+Console.WriteLine($"    Terminal Cleanly Disconnected: {disc.UniqueIdentifier} (Lifetime: {disc.FullLifeTimeSeconds}s)");
+
+Console.WriteLine("\n=== CSharpCopier Quick Start Completed Successfully ===");
