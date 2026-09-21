@@ -18,6 +18,10 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Protobuf Include="proto\copier.proto" GrpcServices="Client" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Compile Remove="examples\**" />
     <None Include="examples\**" />
   </ItemGroup>
