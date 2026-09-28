@@ -158,7 +158,7 @@ finally
     {
         try
         {
-            var discM = await demoClient.DisconnectAsync(masterGuid, apiKey);
+            var discM = await demoClient.DisconnectAsync(masterGuid, apiKey, delete: true);
             Console.WriteLine($"    Master Terminal Cleanly Disconnected: {discM.UniqueIdentifier} (Lifetime: {discM.FullLifeTimeSeconds}s)");
         }
         catch (Exception ex)
@@ -170,7 +170,7 @@ finally
     {
         try
         {
-            var discS = await demoClient.DisconnectAsync(slaveGuid, apiKey);
+            var discS = await demoClient.DisconnectAsync(slaveGuid, apiKey, delete: true);
             Console.WriteLine($"    Slave Terminal Cleanly Disconnected:  {discS.UniqueIdentifier} (Lifetime: {discS.FullLifeTimeSeconds}s)");
         }
         catch (Exception ex)

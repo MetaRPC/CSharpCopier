@@ -66,12 +66,16 @@ public sealed class DemoAccountClient
         };
     }
 
-    public async Task<DisconnectReply> DisconnectAsync(string terminalId, string apiKey = "TRIAL")
+    public async Task<DisconnectReply> DisconnectAsync(string terminalId, string apiKey = "TRIAL", bool delete = false)
     {
-        var url = $"{_endpoint}/Disconnect";
+        var url = $"{_endpoint}/Disconnect?delete={(delete ? "true" : "false")}";
         using var req = new HttpRequestMessage(HttpMethod.Get, url);
         req.Headers.Add("APIKey", apiKey);
         req.Headers.Add("id", terminalId);
+        if (delete)
+        {
+            req.Headers.Add("delete", "true");
+        }
         req.Headers.Add("User-Agent", "CSharpCopier/1.0.0");
 
         using var resp = await _http.SendAsync(req);
