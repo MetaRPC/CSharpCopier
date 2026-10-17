@@ -4,10 +4,11 @@ Welcome to **CSharpCopier**, the official C# client library for MetaRPC's ultra-
 
 ## Installation
 
-Install CSharpCopier using your language's package manager:
+CSharpCopier is not published on NuGet; install it as follows:
 
 ```bash
-dotnet add package MetaRPC.Copier
+git clone https://github.com/MetaRPC/CSharpCopier.git
+dotnet add reference CSharpCopier/MetaRPC.CSharpCopier.csproj
 ```
 
 ## Infrastructure Endpoints

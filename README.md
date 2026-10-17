@@ -1,6 +1,5 @@
 # CSharpCopier — Cloud Trade Copier .NET / C# SDK for MetaTrader 4 & 5
 
-[![NuGet](https://img.shields.io/badge/nuget-MetaRPC.Copier-blue.svg)](https://www.nuget.org/packages)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Docs](https://img.shields.io/badge/docs-CSharpCopier-0083ff.svg)](https://github.com/MetaRPC/CSharpCopier/tree/main/docs)
 [![Latency](https://img.shields.io/badge/execution-<20ms-success.svg)](https://mrpc.pro)
@@ -27,7 +26,8 @@
 ## 📦 Installation
 
 ```bash
-dotnet add package MetaRPC.Copier
+git clone https://github.com/MetaRPC/CSharpCopier.git
+dotnet add reference CSharpCopier/MetaRPC.CSharpCopier.csproj
 ```
 
 ---
