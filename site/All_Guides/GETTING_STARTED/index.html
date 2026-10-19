@@ -858,8 +858,9 @@
 <h1 id="getting-started-with-csharpcopier">Getting Started with CSharpCopier<a class="headerlink" href="#getting-started-with-csharpcopier" title="Permanent link">¶</a></h1>
 <p>Welcome to <strong>CSharpCopier</strong>, the official C# client library for MetaRPC's ultra-low latency Trade Copier engine.</p>
 <h2 id="installation">Installation<a class="headerlink" href="#installation" title="Permanent link">¶</a></h2>
-<p>Install CSharpCopier using your language's package manager:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>dotnet<span class="w"> </span>add<span class="w"> </span>package<span class="w"> </span>MetaRPC.Copier
+<p>CSharpCopier is not published on NuGet; install it as follows:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>git<span class="w"> </span>clone<span class="w"> </span>https://github.com/MetaRPC/CSharpCopier.git
+<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>dotnet<span class="w"> </span>add<span class="w"> </span>reference<span class="w"> </span>CSharpCopier/MetaRPC.CSharpCopier.csproj
 </code></pre></div>
 <h2 id="infrastructure-endpoints">Infrastructure Endpoints<a class="headerlink" href="#infrastructure-endpoints" title="Permanent link">¶</a></h2>
 <p>MetaRPC provides dedicated production and staging environments for the Trade Copier:</p>
@@ -883,9 +884,9 @@
 </tr>
 <tr>
 <td style="text-align: left;"><strong>Staging</strong></td>
-<td style="text-align: left;"><code>copy-stg.mrpc.pro:443</code></td>
-<td style="text-align: left;"><code>https://copy-stg.mrpc.pro</code></td>
-<td style="text-align: left;"><code>wss://copy-stg.mrpc.pro</code></td>
+<td style="text-align: left;"><code>copyback-stg.mrpc.pro:443</code></td>
+<td style="text-align: left;"><code>https://copyback-stg.mrpc.pro</code></td>
+<td style="text-align: left;"><code>wss://copyback-stg.mrpc.pro</code></td>
 <td style="text-align: left;">Integration testing &amp; demo accounts</td>
 </tr>
 </tbody>
