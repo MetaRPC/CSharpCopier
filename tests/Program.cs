@@ -20,7 +20,13 @@ Check(req.UserKey=="owner-test" && req.ManagerKey=="manager-test" && !req.CopySl
 using var doc=JsonDocument.Parse("{\"SlaveTicket\":\"9007199254740993\",\"Success\":false,\"ExceptionCode\":\"TEST\"}");
 var log=TradeLog.FromJson(doc.RootElement);
 Check(log.SlaveTicket==9007199254740993 && !log.Success && log.Raw.GetProperty("ExceptionCode").GetString()=="TEST");
-Console.WriteLine("PASS: all four RPCs authenticate, deadlines, options, errors, invalid keys and real log payloads");
+try {
+ using var invalidDemo=DemoAccountClient.ParseReply("{\"error\":{\"errorCode\":\"MAX_TERMINALS_PER_POD_REACHED\",\"stackTrace\":\"private trace\"}}");
+ throw new Exception("HTTP 200 error accepted");
+} catch(InvalidOperationException e) { Check(e.Message.Contains("MAX_TERMINALS_PER_POD_REACHED") && !e.Message.Contains("private trace")); }
+using var emptyPositions=DemoAccountClient.ParseReply("{\"data\":{\"positionInfos\":[]}}");
+Check(emptyPositions.RootElement.GetProperty("data").GetProperty("positionInfos").GetArrayLength()==0);
+Console.WriteLine("PASS: RPC authentication, deadlines, options, errors, log payloads and HTTP 200 error envelopes");
 class Spy : CallInvoker {
  public List<object> Calls=new();
  public override AsyncUnaryCall<TResponse> AsyncUnaryCall<TRequest,TResponse>(Method<TRequest,TResponse> method,string host,CallOptions options,TRequest request) {

@@ -11,6 +11,19 @@ namespace MetaRPC.Copier;
 /// </summary>
 public sealed class DemoAccountClient
 {
+    internal static JsonDocument ParseReply(string json)
+    {
+        var doc = JsonDocument.Parse(json);
+        if (doc.RootElement.ValueKind == JsonValueKind.Object && doc.RootElement.TryGetProperty("error", out var error)
+            && error.ValueKind != JsonValueKind.Null && error.ValueKind != JsonValueKind.False)
+        {
+            var code = error.ValueKind == JsonValueKind.Object && error.TryGetProperty("errorCode", out var value) ? value.ToString() : "API_ERROR";
+            doc.Dispose();
+            throw new InvalidOperationException("MRPC request failed: " + code);
+        }
+        return doc;
+    }
+
     private readonly string _endpoint;
     private static readonly HttpClient _http = new HttpClient();
 
@@ -31,13 +44,13 @@ public sealed class DemoAccountClient
         resp.EnsureSuccessStatusCode();
 
         var json = await resp.Content.ReadAsStringAsync();
-        using var doc = JsonDocument.Parse(json);
+        using var doc = ParseReply(json);
         var root = doc.RootElement;
 
         return new GuiDemoOpenAccountReply
         {
             ResultCode = root.TryGetProperty("resultCode", out var rc) ? rc.GetInt32() : 0,
-            Login = root.TryGetProperty("login", out var lg) ? ulong.Parse(lg.GetString() ?? "0") : 0,
+            Login = root.TryGetProperty("login", out var lg) ? ulong.Parse(lg.ToString()) : 0,
             Password = root.TryGetProperty("password", out var pw) ? pw.GetString() ?? "" : "",
             Investor = root.TryGetProperty("investor", out var inv) ? inv.GetString() ?? "" : "",
             Server = root.TryGetProperty("server", out var srv) ? srv.GetString() ?? request.Server : request.Server,
@@ -56,7 +69,7 @@ public sealed class DemoAccountClient
         resp.EnsureSuccessStatusCode();
 
         var json = await resp.Content.ReadAsStringAsync();
-        using var doc = JsonDocument.Parse(json);
+        using var doc = ParseReply(json);
         var guid = doc.RootElement.GetProperty("data").GetProperty("terminalInstanceGuid").GetString() ?? "";
 
         return new ConnectExReply
@@ -82,7 +95,7 @@ public sealed class DemoAccountClient
         resp.EnsureSuccessStatusCode();
 
         var json = await resp.Content.ReadAsStringAsync();
-        using var doc = JsonDocument.Parse(json);
+        using var doc = ParseReply(json);
         var data = doc.RootElement.GetProperty("data");
 
         return new DisconnectReply
@@ -102,7 +115,7 @@ public sealed class DemoAccountClient
         using var resp = await _http.SendAsync(req);
         resp.EnsureSuccessStatusCode();
         var json = await resp.Content.ReadAsStringAsync();
-        return JsonDocument.Parse(json);
+        return ParseReply(json);
     }
 
     public async Task<JsonElement> OpenedOrdersAsync(string terminalId, string apiKey = "TRIAL")
@@ -115,7 +128,7 @@ public sealed class DemoAccountClient
         using var resp = await _http.SendAsync(req);
         resp.EnsureSuccessStatusCode();
         var json = await resp.Content.ReadAsStringAsync();
-        var doc = JsonDocument.Parse(json);
+        using var doc = ParseReply(json);
         if (doc.RootElement.TryGetProperty("data", out var data) && data.TryGetProperty("positionInfos", out var positions))
         {
             return positions.Clone();
@@ -133,7 +146,7 @@ public sealed class DemoAccountClient
         using var resp = await _http.SendAsync(req);
         resp.EnsureSuccessStatusCode();
         var json = await resp.Content.ReadAsStringAsync();
-        return JsonDocument.Parse(json);
+        return ParseReply(json);
     }
 
     public static string ToHyphenGuid(string hexGuid)

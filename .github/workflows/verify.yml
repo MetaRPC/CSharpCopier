@@ -20,6 +20,7 @@ jobs:
       - run: dotnet run --project tests/ContractTests.csproj
       - run: dotnet build examples/List/List.csproj
       - run: dotnet build examples/QuickStart/QuickStart.csproj
+      - run: dotnet build examples/LiveAdapter/LiveAdapter.csproj
 
   docs:
     runs-on: ubuntu-latest
