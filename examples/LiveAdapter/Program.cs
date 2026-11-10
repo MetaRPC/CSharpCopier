@@ -2,15 +2,17 @@ using MetaRPC.Copier;
 using MetaRPC.Copier.Models;
 using System.Text.Json;
 try {
- var platform=Environment.GetEnvironmentVariable("COPIER_PLATFORM")??"MT5";
- if(platform is not ("MT4" or "MT5"))throw new Exception("COPIER_PLATFORM must be MT4 or MT5");
+ string Platform(int i) {
+  var p=Environment.GetEnvironmentVariable(i==2?"COPIER_MASTER_PLATFORM":"COPIER_SLAVE_PLATFORM")??Environment.GetEnvironmentVariable("COPIER_PLATFORM")??"MT5";
+  return p is "MT4" or "MT5" or "CT" or "TL"?p:throw new Exception("Copier platform must be MT4, MT5, CT or TL");
+ }
  var v=Enumerable.Range(0,13).Select(_=>Console.ReadLine()??throw new Exception("Expected 13 configuration lines")).ToArray();
  using var c=new CopierService("https://"+v[0],v[1]);
  if(args[0]=="stream") {
   await c.StreamTradeLogsAsync(args[1],log=>Console.WriteLine(log.GetRawText()));
   return;
  }
- Account AccountAt(int i)=>new(){Type=platform,User=ulong.Parse(v[i]),Password=v[i+1],Server=v[i+2],Id=v[i+3]};
+ Account AccountAt(int i)=>new(){Type=Platform(i),User=ulong.Parse(v[i]),Password=v[i+1],Server=v[i+2],Id=v[i+3]};
  object r=args[0] switch {
  "start"=>await c.StartAsync(new(){Master=AccountAt(2),Slave=AccountAt(6),RiskType=v[10],RiskValue=v[11],FixedMasterBalance=v[12],CopySl=true,CopyTp=true}),
  "list"=>await c.ListAsync(),
