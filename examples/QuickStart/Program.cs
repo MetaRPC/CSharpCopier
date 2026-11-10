@@ -5,6 +5,7 @@ using MetaRPC.Copier;
 using MetaRPC.Copier.Models;
 
 Console.WriteLine("=== MetaRPC CSharpCopier Trade Replication Quick Start ===");
+if (Environment.GetEnvironmentVariable("MRPC_LIVE_TESTS") != "1") throw new Exception("Set MRPC_LIVE_TESTS=1 explicitly to run demo trading");
 string apiKey = args.Length > 0 ? args[0] : (Environment.GetEnvironmentVariable("MRPC_API_KEY") ?? "");
 var demoClient = new DemoAccountClient("https://mt5.mrpc.pro");
 string? masterGuid = null;

@@ -19,6 +19,7 @@ jobs:
       - run: dotnet build
       - run: dotnet run --project tests/ContractTests.csproj
       - run: dotnet build examples/List/List.csproj
+      - run: dotnet build examples/QuickStart/QuickStart.csproj
 
   docs:
     runs-on: ubuntu-latest
