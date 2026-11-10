@@ -18,6 +18,9 @@ public sealed class CopierAccount : IDisposable
 
     public CopierAccount(string endpoint, string userKey, string managerKey = "")
     {
+        if (string.IsNullOrWhiteSpace(userKey) || userKey.Equals("TRIAL", StringComparison.OrdinalIgnoreCase)
+            || userKey.Any(c => c < 33 || c > 126))
+            throw new ArgumentException("A real owner API key is required (printable ASCII, no whitespace).", nameof(userKey));
         UserKey = userKey;
         ManagerKey = string.IsNullOrEmpty(managerKey) ? userKey : managerKey;
 
@@ -43,7 +46,7 @@ public sealed class CopierAccount : IDisposable
     {
         var headers = new Metadata
         {
-            { "authorization", $"Bearer {UserKey}" },
+            { "apikey", UserKey },
             { "x-metarpc-client-sdk", "CSharpCopier/1.0.0" }
         };
         return headers;

@@ -24,6 +24,13 @@ public sealed class CopierService : IDisposable
         _grpcClient = new tradecopy.Grpc.CopierService.CopierServiceClient(_account.Channel);
     }
 
+    internal CopierService(CopierAccount account, Grpc.Core.CallInvoker invoker)
+    {
+        _account = account;
+        _endpoint = "https://copy.mrpc.pro";
+        _grpcClient = new tradecopy.Grpc.CopierService.CopierServiceClient(invoker);
+    }
+
     public async Task<StartReply> StartAsync(StartRequest request, CancellationToken ct = default)
     {
         if (string.IsNullOrEmpty(request.UserKey)) request.UserKey = _account.UserKey;
@@ -63,7 +70,7 @@ public sealed class CopierService : IDisposable
         try
         {
             var headers = _account.CreateAuthMetadata();
-            var reply = await _grpcClient.StartAsync(grpcReq, headers, cancellationToken: ct);
+            var reply = await _grpcClient.StartAsync(grpcReq, headers, deadline: DateTime.UtcNow.AddSeconds(180), cancellationToken: ct);
             return new StartReply { Ok = reply.Ok, CopierId = reply.CopierId, Error = reply.Error };
         }
         catch (Exception ex)
@@ -77,7 +84,7 @@ public sealed class CopierService : IDisposable
         try
         {
             var headers = _account.CreateAuthMetadata();
-            var reply = await _grpcClient.ListAsync(new tradecopy.Grpc.ListRequest { UserKey = _account.UserKey }, headers, cancellationToken: ct);
+            var reply = await _grpcClient.ListAsync(new tradecopy.Grpc.ListRequest { UserKey = _account.UserKey }, headers, deadline: DateTime.UtcNow.AddSeconds(180), cancellationToken: ct);
             var list = new List<CopierSummary>();
             foreach (var c in reply.Copiers)
             {
@@ -109,7 +116,7 @@ public sealed class CopierService : IDisposable
         try
         {
             var headers = _account.CreateAuthMetadata();
-            var reply = await _grpcClient.PauseAsync(new tradecopy.Grpc.PauseRequest { UserKey = _account.UserKey, CopierId = copierId, Paused = paused }, headers, cancellationToken: ct);
+            var reply = await _grpcClient.PauseAsync(new tradecopy.Grpc.PauseRequest { UserKey = _account.UserKey, CopierId = copierId, Paused = paused }, headers, deadline: DateTime.UtcNow.AddSeconds(180), cancellationToken: ct);
             return new SimpleReply { Ok = reply.Ok, Error = reply.Error };
         }
         catch (Exception ex)
@@ -123,7 +130,7 @@ public sealed class CopierService : IDisposable
         try
         {
             var headers = _account.CreateAuthMetadata();
-            var reply = await _grpcClient.RemoveAsync(new tradecopy.Grpc.RemoveRequest { UserKey = _account.UserKey, CopierId = copierId }, headers, cancellationToken: ct);
+            var reply = await _grpcClient.RemoveAsync(new tradecopy.Grpc.RemoveRequest { UserKey = _account.UserKey, CopierId = copierId }, headers, deadline: DateTime.UtcNow.AddSeconds(180), cancellationToken: ct);
             return new SimpleReply { Ok = reply.Ok, Error = reply.Error };
         }
         catch (Exception ex)
@@ -132,26 +139,47 @@ public sealed class CopierService : IDisposable
         }
     }
 
-    public ClientWebSocket StreamTradeLogs(string copierId, Action<TradeLog> onMessage)
+    /// <summary>Reads complete real log messages. Await this task to observe connection and parsing failures.</summary>
+    public async Task StreamTradeLogsAsync(string copierId, Action<JsonElement> onMessage, CancellationToken ct = default)
+    {
+        using var ws = new ClientWebSocket();
+        await ReadTradeLogsAsync(ws, copierId, onMessage, ct);
+    }
+
+    private async Task ReadTradeLogsAsync(ClientWebSocket ws, string copierId, Action<JsonElement> onMessage, CancellationToken ct)
+    {
+        var endpoint = new Uri(_endpoint.StartsWith("http", StringComparison.OrdinalIgnoreCase) ? _endpoint : $"https://{_endpoint}");
+        var uri = new UriBuilder(endpoint) { Scheme = endpoint.Scheme == "http" ? "ws" : "wss", Path = "/OnTradeLog", Query = "id=" + Uri.EscapeDataString(copierId) }.Uri;
+        ws.Options.SetRequestHeader("ApiKey", _account.UserKey);
+        using var handshake = CancellationTokenSource.CreateLinkedTokenSource(ct);
+        handshake.CancelAfter(TimeSpan.FromSeconds(10));
+        await ws.ConnectAsync(uri, handshake.Token);
+        var buffer = new byte[8192];
+        while (ws.State == WebSocketState.Open)
+        {
+            using var message = new System.IO.MemoryStream();
+            WebSocketReceiveResult result;
+            do
+            {
+                result = await ws.ReceiveAsync(new ArraySegment<byte>(buffer), ct);
+                if (result.MessageType == WebSocketMessageType.Close) return;
+                if (result.MessageType != WebSocketMessageType.Text) throw new InvalidOperationException("Expected a JSON text message.");
+                if (message.Length + result.Count > 4 * 1024 * 1024) throw new InvalidOperationException("Trade-log message exceeds 4 MiB.");
+                message.Write(buffer, 0, result.Count);
+            } while (!result.EndOfMessage);
+            using var document = JsonDocument.Parse(message.ToArray());
+            onMessage(document.RootElement.Clone());
+        }
+    }
+
+    [Obsolete("Use and await StreamTradeLogsAsync to observe errors and preserve the full log payload.")]
+    public ClientWebSocket StreamTradeLogs(string copierId, Action<TradeLog> onMessage, Action<Exception>? onError = null)
     {
         var ws = new ClientWebSocket();
-        var uri = new Uri($"wss://copy.mrpc.pro/OnTradeLog?id={copierId}");
-        Task.Run(async () =>
-        {
-            try
-            {
-                await ws.ConnectAsync(uri, CancellationToken.None);
-                var buffer = new byte[4096];
-                while (ws.State == WebSocketState.Open)
-                {
-                    var result = await ws.ReceiveAsync(new ArraySegment<byte>(buffer), CancellationToken.None);
-                    if (result.MessageType == WebSocketMessageType.Close) break;
-                    var json = Encoding.UTF8.GetString(buffer, 0, result.Count);
-                    var log = JsonSerializer.Deserialize<TradeLog>(json);
-                    if (log != null) onMessage(log);
-                }
-            }
-            catch { }
+        _ = Task.Run(async () => {
+            try { await ReadTradeLogsAsync(ws, copierId, json => onMessage(TradeLog.FromJson(json)), CancellationToken.None); }
+            catch (Exception ex) { if (onError != null) onError(ex); else System.Diagnostics.Trace.TraceError("Trade-log stream failed: {0}", ex.GetType().Name); }
+            finally { ws.Dispose(); }
         });
         return ws;
     }

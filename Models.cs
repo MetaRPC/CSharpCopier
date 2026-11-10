@@ -65,6 +65,14 @@ public class SimpleReply
 
 public class TradeLog
 {
+    public System.Text.Json.JsonElement Raw { get; set; }
+    internal static TradeLog FromJson(System.Text.Json.JsonElement json)
+    {
+        var values = json.EnumerateObject().ToDictionary(p => p.Name, p => p.Value, StringComparer.OrdinalIgnoreCase);
+        string Text(string key) => values.TryGetValue(key, out var v) ? v.ToString() : "";
+        ulong Ticket(string key) => ulong.TryParse(Text(key), out var n) ? n : 0;
+        return new TradeLog { Id = Text("id"), CopierId = Text("copierId"), Symbol = Text("slaveSymbol"), UpdateType = Text("updateType"), SlaveTicket = Ticket("slaveTicket"), MasterTicket = Ticket("masterTicket"), Success = Text("success").Equals("true", StringComparison.OrdinalIgnoreCase), Raw = json.Clone() };
+    }
     [JsonPropertyName("id")] public string Id { get; set; } = "";
     [JsonPropertyName("copierId")] public string CopierId { get; set; } = "";
     [JsonPropertyName("symbol")] public string Symbol { get; set; } = "";

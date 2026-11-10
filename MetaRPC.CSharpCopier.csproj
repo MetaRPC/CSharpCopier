@@ -22,7 +22,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Compile Remove="examples\**" />
+    <Compile Remove="examples\**;tests\**" />
     <None Include="examples\**" />
   </ItemGroup>
 </Project>

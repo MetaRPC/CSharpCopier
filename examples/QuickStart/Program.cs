@@ -5,7 +5,7 @@ using MetaRPC.Copier;
 using MetaRPC.Copier.Models;
 
 Console.WriteLine("=== MetaRPC CSharpCopier Trade Replication Quick Start ===");
-string apiKey = args.Length > 0 ? args[0] : (Environment.GetEnvironmentVariable("MRPC_API_KEY") ?? "TRIAL");
+string apiKey = args.Length > 0 ? args[0] : (Environment.GetEnvironmentVariable("MRPC_API_KEY") ?? "");
 var demoClient = new DemoAccountClient("https://mt5.mrpc.pro");
 string? masterGuid = null;
 string? slaveGuid = null;
@@ -26,7 +26,7 @@ try
     await Task.Delay(1000);
 
     // 2. Connect Terminals via ConnectEx with APIKey: TRIAL
-    Console.WriteLine($"\n[2] Connecting terminals via ConnectEx (APIKey: {apiKey})...");
+    Console.WriteLine($"\n[2] Connecting terminals via ConnectEx (authenticated)...");
     var connM = await demoClient.ConnectExAsync(master.Login, master.Password, master.Server, apiKey);
     masterGuid = connM.TerminalInstanceGuid;
     Console.WriteLine($"    Master Terminal Connected! GUID: {masterGuid}");
